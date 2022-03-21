@@ -1,0 +1,70 @@
+{{/* Define teams final output. */}}
+{{ define "teams.card" }}
+
+{{/* Store current alert status. */}}
+{{ $status := .Status }}
+
+{
+  "@type": "MessageCard",
+  "@context": "http://schema.org/extensions",
+  "themeColor": "{{- if eq $status "resolved" -}}2DC72D
+                 {{- else if eq $status "firing" -}}
+                    {{- if eq .CommonLabels.severity "critical" -}}8C1A1A
+                    {{- else if eq .CommonLabels.severity "warning" -}}FFA500
+                    {{- else -}}808080{{- end -}}
+                 {{- else -}}808080{{- end -}}",
+  "summary": "Prometheus Alerts",
+  "title": "[{{ $status | title -}}
+            {{ if eq $status "firing" }}:{{ .Alerts | len }}{{- end -}}
+            ] {{ .CommonLabels.alertname }}",
+  "sections": [
+  {{- range $index, $alert := .Alerts }}{{- if $index }},{{- end }}
+    { 
+      "facts": [
+        {
+          "name": "Severity",
+          "value": "{{$alert.Labels.severity}}"
+        },
+        {
+          "name": "Description",
+          "value": "{{$alert.Annotations.description}}"
+        }
+      ],
+      "markdown": true
+    }
+    {{- end }}
+  ],
+  "potentialAction": [
+  {{- range $index, $alert := .Alerts }}{{- if $index }},{{- end }}
+    {{- if and (index $alert.Annotations "notes") (ne $status "resolved") }} 
+    {
+      "@type": "OpenUri",
+      "name": "Documentations",
+      "targets": [{
+         "os": "default",
+         "uri": "{{$alert.Annotations.notes}}"
+      }]
+    },
+    {{- end }}
+    {
+      "@type": "OpenUri",
+      "name": "Grafana",
+      "targets": [{
+         "os": "default",
+         "uri": "{{$alert.Annotations.grafana}}"
+      }]
+    }
+  {{- end }}
+  {{- if ne $status "resolved" }}
+    {
+      "@type": "OpenUri",
+      "name": "Mute",
+      "targets": [{
+         "os": "default",
+         "uri": "{{ .ExternalURL }}/#?alerts/silenced=true&inhibited=true&active=true&filter=%7B{{$c := counter}}{{ range $key, $value := .CommonLabels }}{{if call $c}}%22%2C%20{{ end }}{{ $key }}%3D%22{{ $value }}{{- end }}%22%7D"
+      }]
+    }
+  {{ end }}
+  ]
+}
+{{ end }}

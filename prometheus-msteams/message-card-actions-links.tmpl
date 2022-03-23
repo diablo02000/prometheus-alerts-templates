@@ -4,6 +4,9 @@
 {{/* Store current alert status. */}}
 {{ $status := .Status }}
 
+{{/* Store external url. */}}
+{{ $externalUrl := .ExternalURL }}
+
 {
   "@type": "MessageCard",
   "@context": "http://schema.org/extensions",
@@ -22,12 +25,12 @@
     { 
       "facts": [
         {
-          "name": "Severity",
-          "value": "{{$alert.Labels.severity}}"
+          "name": "Severity:",
+          "value": "{{ $alert.Labels.severity }}"
         },
         {
-          "name": "Description",
-          "value": "{{$alert.Annotations.description}}"
+          "name": "Description:",
+          "value": "{{ $alert.Annotations.description }}"
         }
       ],
       "markdown": true
@@ -35,36 +38,40 @@
     {{- end }}
   ],
   "potentialAction": [
-  {{- range $index, $alert := .Alerts }}{{- if $index }},{{- end }}
-    {{- if and (index $alert.Annotations "notes") (ne $status "resolved") }} 
+    {{- if ne $status "resolved" }}
     {
       "@type": "OpenUri",
-      "name": "Documentations",
+      "name": "Notes &#x1F4D3",
       "targets": [{
          "os": "default",
-         "uri": "{{$alert.Annotations.notes}}"
+         "uri": "{{ (index .Alerts 0).Annotations.notes }}"
+      }]
+    },
+    {
+      "@type": "OpenUri",
+      "name": "Grafana &#x1F4C8",
+      "targets": [{
+         "os": "default",
+         "uri": "{{ (index .Alerts 0).Annotations.grafana }}"
+      }]
+    },
+    {
+      "@type": "OpenUri",
+      "name": "Mute &#x1F515",
+      "targets": [{
+         "os": "default",
+         "uri": "{{ $externalUrl }}/#/silences/new?filter=%7B{{$c := counter}}{{ range $key, $value := .CommonLabels }}{{if call $c}}%22%2C%20{{ end }}{{ $key }}%3D%22{{ $value }}{{- end }}%22%7D"
       }]
     },
     {{- end }}
     {
       "@type": "OpenUri",
-      "name": "Grafana",
+      "name": "Query &#x1F50E",
       "targets": [{
          "os": "default",
-         "uri": "{{$alert.Annotations.grafana}}"
+         "uri": "{{ (index .Alerts 0).GeneratorURL }}"
       }]
     }
-  {{- end }}
-  {{- if ne $status "resolved" }}
-    {
-      "@type": "OpenUri",
-      "name": "Mute",
-      "targets": [{
-         "os": "default",
-         "uri": "{{ .ExternalURL }}/#?alerts/silenced=true&inhibited=true&active=true&filter=%7B{{$c := counter}}{{ range $key, $value := .CommonLabels }}{{if call $c}}%22%2C%20{{ end }}{{ $key }}%3D%22{{ $value }}{{- end }}%22%7D"
-      }]
-    }
-  {{ end }}
   ]
 }
 {{ end }}

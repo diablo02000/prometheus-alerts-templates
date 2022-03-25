@@ -1,6 +1,3 @@
-# prometheus-alerts-templates
-Template for Prometheus alerts
+# Prometheus alerts templates
 
-## Prometheus msteams
-
-link: https://github.com/prometheus-msteams/prometheus-msteams
+Some Templates examples for Prometheus alerts on several vectors (Slack, MSTeams ...).

@@ -13,7 +13,7 @@ A lightweight Go Web Server that receives POST alert messages from Prometheus Al
 * Grafana: base on annotations.grafana key.
 * Notes: base on annotations.notes key.
 
-*** NOTES >> for "Query" and "Mute" action, the link a setup by autogenerate link "GeneratorURL" and "ExternalURL". ***
+**NOTES >> for "Query" and "Mute" action, the link a setup by autogenerate link "GeneratorURL" and "ExternalURL".**
 
 ## Preview
 
